@@ -1,0 +1,83 @@
+Main Idea:
+Post-quantum CryptoTo understand and implement the NTRUalgorithmTen to investigate the post Quantum proposalFundamentals:Work through the papers below and get a handle on 
+.Why RSA is vulnerable to a Quantum Computer
+.What the PQC competition is about
+.The idea of NTRUand how it differs from RSA 
+.What makes it PQ resistant
+.Produce a Java prototype of NTRU
+.Produce a Java prototype of the NTRUKEM
+.Describe and explain them in your write up
+.Implement (Paying attention to Extras below) them in Python/Java and gather some data
+.(Including the inevitable problemsthat arise)Present your results.
+
+4/2/2020 -	Briefly why RSA is vulnerable to a quantum computer:
+
+"the security of RSA is based on the multiplication of two prime numbers (P and Q) to give the modulus value (N). If we can crack the N value, we will crack the decryption key."
+
+(https://medium.com/coinmonks/integer-factorization-defining-the-limits-of-rsa-cracking-71fc0675bc0e)
+
+Although the most recent success of RSA number factorisation was attributed to algorithm improvement (by a factor of 3-4) as oppose to computing power (1.25-1.67)
+(https://en.wikipedia.org/wiki/RSA_numbers#cite_note-37)
+quantum computing power still poses a major potential threat to the difficulty of factorising semiprime numbers.
+(https://arxiv.org/abs/quant-ph/9508027)
+
+For other cryptographic algorithms the threat from a large scale quantum computer could be achieved via increasing the keysize (as is the case with symmetric key encryption systems) but as a public key based, key establishment algorithm RSA is vulnerable.
+
+
+
+
+Briefly what is the PQC competition:
+
+Its a project by NIST, formally PQC Standardisation, that is analysing a pool of signature schemes and encryption/key-establishment schemes for their viability as a standard for quantum computation-proofness, out of 69 originally submited, 17 encryption/key-establishment agorithms and 9 signature schemes have passed to the second round of testing 
+(https://csrc.nist.gov/projects/post-quantum-cryptography/round-2-submissions)
+
+
+The idea of NTRU and how it differs from RSA:
+
+NTRU can be modified to meet the computing power of the encoder/decoder and can have a shorter execution time at the cost of generating an undecipherable message.
+
+NTRU's inputs are essentialy (N, p, q) and a set of Polynomials L of degree N with integer coefficients.
+
+depending on the choice of polynomial sets, (described in the pdf) there are additional input(d) for binary NTRU or input (d,r) for symmetric NTRU.
+
+N, p, q, and set L are public knowledge. The public and private keys are as follows:
+
+priv 	f = [f1,f2,f3...fN] with f element of L
+
+pub  	h = [h1,h2,h3...hN] with 0<= hi <q
+
+the private key can be chosen almost randomly from the set L.
+
+the message that is to be encrypted has to be broken into blocks of the form:
+
+message - [m1,m2,m3...mN] with 0<= mi <p
+
+message length <= Np (?)
+
+
+to encode a message block, choose a random polynomial (encoding fuzz) 
+
+U = [U1,U2,U3...UN] element of L
+
+then compute:
+
+e = U%h+m  (mod q)
+ e:encrypted block
+ h:public key
+(% is multiplication of each numerical to form a new polynomial of lengh N)
+
+
+to decode:
+f:private key
+s & t : numbers derived (explain later)
+a specific polynomial  fp^-1 (see pdf) page 4, length N and each polynomial; 0<= polynom <p
+ 
+ compute a;
+ 	a=f%e (mod q)
+
+ create shifted polynomial b (see pdf page 4)
+
+
+ recover message by computing
+
+ b%fp^-1 (mod p)
