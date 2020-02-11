@@ -81,3 +81,18 @@ a specific polynomial  fp^-1 (see pdf) page 4, length N and each polynomial; 0<=
  recover message by computing
 
  b%fp^-1 (mod p)
+
+ note that for the final step we change the modulus to base 'p' instead of 'q', this along with the private key f is what secures NTRU
+
+check bits in each message block probably necesary,
+normal cause of decoding failure is an incorrect value s, successive values of s-1, s+1, s+2, s-2 etc. will usually recover the message. Failing that, we say we have a 'gap failure' and thus the message cannot be decoded. "Allegedly" shouldnt be an issue if parameter values are "well chosen".
+
+F%G requires N^2 multiplications and N^2 additions, thus encoding a message block takes O(N^2) for a block Nlog2q bits, and the same for decoding. 
+
+This actually makes NTRU slightly faster than RSA for similar security levels.
+
+So what are these polynomials?
+aswer well put here:
+https://crypto.stackexchange.com/questions/7878/how-to-make-a-message-into-a-polynomial-on-ntru-encryption
+
+
