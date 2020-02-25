@@ -44,9 +44,16 @@ N, p, q, and set L are public knowledge. The public and private keys are as foll
 
 priv 	f = [f1,f2,f3...fN] with f element of L
 
-pub  	h = [h1,h2,h3...hN] with 0<= hi <q
+pub  	h = [h1,h2,h3...hN] with 0<= hi <q 
 
-the private key can be chosen almost randomly from the set L.
+set L is limited to:
+binary;
+d of the polynomial integers are 1
+the rest are 0
+
+in symmetric its more difficult...
+
+the private key can be chosen almost randomly from the set L (this and the public key explained below).
 
 the message that is to be encrypted has to be broken into blocks of the form:
 
@@ -94,5 +101,54 @@ This actually makes NTRU slightly faster than RSA for similar security levels.
 So what are these polynomials?
 aswer well put here:
 https://crypto.stackexchange.com/questions/7878/how-to-make-a-message-into-a-polynomial-on-ntru-encryption
+
+
+creation of encoding and decoding keys:
+
+select two random polynomials from the set L, polynomials f and g (all with N elements)
+f will create the decoding key and should be kept secret. g will be used to create the public key and doesnt need to be kept any longer.
+
+f has two inverse modulos to compute:
+
+fq^-1=[w1, w2,... wN] with o<=wi<q and f%fq^-1 = 1 (mod q)
+this will be used to create the encoding key
+
+fp^-1=[w1, w2, ...wN] with o<=wi<p and f%fp^-1 = 1 (mod p)
+this will be used in the decoding process
+
+(note, gcd(f(1),pq) = 1   this is for security reasons)
+
+compute the parity polynomial PI, where:
+PI=[PI1, PI2, PI3..., PIN]
+
+PI+F%G=0 (mod p) 0<=PIi<p
+
+such that every coefficient of PI+F%G is divisible by p
+Finally we can generaie the public encoding  key h:
+
+h = [h1,h2,...hN]=PI%fq^-1 + g (mod q) 
+note 0<= hk < q
+
+we also need two shift values S and T
+for binary 
+
+s = [  q/2 + d(p-1) + (d^3)/N  ] mod q
+
+t = q[  ( d(p-1) + (d^3)/N )/q  ] mod p
+
+     ^this might be a typo will have to verify*****
+
+for symmetric we have
+
+s = [q/2 + p -1]   t=0
+
+
+and thats basically everything you need to know -sic
+
+
+
+
+
+
 
 
