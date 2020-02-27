@@ -59,7 +59,6 @@ the message that is to be encrypted has to be broken into blocks of the form:
 
 message - [m1,m2,m3...mN] with 0<= mi <p
 
-message length <= Np (?)
 
 
 to encode a message block, choose a random polynomial (encoding fuzz) 
@@ -110,10 +109,10 @@ f will create the decoding key and should be kept secret. g will be used to crea
 
 f has two inverse modulos to compute:
 
-fq^-1=[w1, w2,... wN] with o<=wi<q and f%fq^-1 = 1 (mod q)
+fq^-1=[w1, w2,... wN] with 0<=wi<q and f%fq^-1 = 1 (mod q)
 this will be used to create the encoding key
 
-fp^-1=[w1, w2, ...wN] with o<=wi<p and f%fp^-1 = 1 (mod p)
+fp^-1=[w1, w2, ...wN] with 0<=wi<p and f%fp^-1 = 1 (mod p)
 this will be used in the decoding process
 
 (note, gcd(f(1),pq) = 1   this is for security reasons)
@@ -145,10 +144,40 @@ s = [q/2 + p -1]   t=0
 
 and thats basically everything you need to know -sic
 
+summary of public variables :
+
+L : the set the private key, formatted message blocks, polynomial for generating the public ket, and encoding fuzz is chosen from
+N : the size of the vectors in L aswell as the size of the message block (must be prime)
+d : the amount of '1's in every vector in set L (binary)
+p : the base of the message polynomial block, coprime with q
+q : the base of the encrypted polynomial block, coprime with p
+h : the public key (given by receiver)
 
 
+Summary of semiprivate variables (sender):
+
+m : message (broken into blocks of length N an of base p) 
+U : random polynomial from L (encoding fuzz)
+e : encoded message e = U%h+m  (mod q)
+
+Summary of private variables (receiver):
+
+f : the private key, a set of polynomials from L (randomly chosen?)
+a : a set computed from f%e (mod q)
+s : shift value given by [  q/2 + d(p-1) + (d^3)/N  ] mod q (derived from public knowledge)
+t : shift value given by q[  ( d(p-1) + (d^3)/N )/q  ] mod p (derived from public knowledge)
+
+b : a polynomial [b1, b2, ... bN] defined by : bk = ak + t - (0 if ak < s :: q if ak >= s)
+fp^-1 : a polynomial of length N and base p computed in the key generation process
 
 
+Summary of private variables (keygen process)
+
+g : a random polynomial from the set L
 
 
+good reading: https://pdfs.semanticscholar.org/5b09/6fe218ae0c7f1888756f2d65f73b6e463395.pdf
 
+NTRU-KEM : https://eprint.iacr.org/2017/667.pdf
+
+Note to self: Final critique of project is 12th March
