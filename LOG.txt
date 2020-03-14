@@ -147,10 +147,10 @@ and thats basically everything you need to know -sic
 summary of public variables :
 
 L : the set the private key, formatted message blocks, polynomial for generating the public ket, and encoding fuzz is chosen from
-N : the size of the vectors in L aswell as the size of the message block (must be prime)
+N : the size of the vectors in L aswell as the size of the message block (must be prime) usually 251
 d : the amount of '1's in every vector in set L (binary)
-p : the base of the message polynomial block, coprime with q
-q : the base of the encrypted polynomial block, coprime with p
+p : the base of the message polynomial block, is prime and coprime with q, usually 3
+q : the base of the encrypted polynomial block, coprime with p (and bigger than p)(usually a multiple of 2?) 128
 h : the public key (given by receiver)
 
 
@@ -162,14 +162,15 @@ e : encoded message e = U%h+m  (mod q)
 
 Summary of private variables (receiver):
 
-f : the private key, a set of polynomials from L (randomly chosen?)
+f : the private key, a set of polynomials from L (the gcd(the sum of coefficients in f, pq)=1, aka coprime pq) (in binary d and pq must be coprime)
 a : a set computed from f%e (mod q)
 s : shift value given by [  q/2 + d(p-1) + (d^3)/N  ] mod q (derived from public knowledge)
 t : shift value given by q[  ( d(p-1) + (d^3)/N )/q  ] mod p (derived from public knowledge)
 
 b : a polynomial [b1, b2, ... bN] defined by : bk = ak + t - (0 if ak < s :: q if ak >= s)
 fp^-1 : a polynomial of length N and base p computed in the key generation process
-
+fq^-1 : a polynomial of length N and base q computed in the key generation process
+			(these two are the inverse polynomial of f)
 
 Summary of private variables (keygen process)
 
@@ -181,3 +182,16 @@ good reading: https://pdfs.semanticscholar.org/5b09/6fe218ae0c7f1888756f2d65f73b
 NTRU-KEM : https://eprint.iacr.org/2017/667.pdf
 
 Note to self: Final critique of project is 12th March
+
+NTRU vulnerable to active attack?
+https://stackoverflow.com/questions/2421409/algorithm-for-computing-the-inverse-of-a-polynomial
+
+very good
+https://medium.com/tixlcurrency/the-essence-of-ntru-key-generation-encryption-decryption-7c0540ef8441
+
+modular integers may be the key (ormore likely simple algeraic field extesios)
+https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm#Computing_multiplicative_inverses_in_modular_structures
+
+can you keep f and just choose a different g for new public keys? is it secure?
+https://crypto.stackexchange.com/questions/30893/multiple-ntru-public-keys-for-the-same-private-key
+
