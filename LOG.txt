@@ -168,8 +168,8 @@ s : shift value given by [  q/2 + d(p-1) + (d^3)/N  ] mod q (derived from public
 t : shift value given by q[  ( d(p-1) + (d^3)/N )/q  ] mod p (derived from public knowledge)
 
 b : a polynomial [b1, b2, ... bN] defined by : bk = ak + t - (0 if ak < s :: q if ak >= s)
-fp^-1 : a polynomial of length N and base p computed in the key generation process
-fq^-1 : a polynomial of length N and base q computed in the key generation process
+fp^-1 : a polynomial of length N and base p computed in the key generation process, used to decrypt messages
+fq^-1 : a polynomial of length N and base q computed in the key generation process, used to generate the public key
 			(these two are the inverse polynomial of f)
 
 Summary of private variables (keygen process)
