@@ -7,24 +7,38 @@ public class NTRU{
                 //the set L should possibly be well defined before this point with d 1s in every polynomial
 				//in most cases N can be determined by the key length
                 case "encrypt": 
-                //args[1] pub key, args[2] N p q, args[3] message
+                //args[1] pub key an array passed of form {a, b, c, d, ... z}, args[2] N p q d an array passed of form {N, p, q, d}, args[3] message (a plaintext string)
 				int[] enkey = string2arr(args[1]);
-                //break message into blocks and encrypt each one
-				System.out.print(encrypt(enkey,args[2],args[3]));
+                int[] npqd = string2arr(args[2]);
+                int[] placeholderparsedplaintext = new int[] {1,-1,0,1,1,-1,0,1,-1};//converted from args[3]
+                //break message into blocks, add checksum to the end of each block, and encrypt each one, To be implemented,
+				System.out.print(encrypt(enkey,npqd,placeholderparsedplaintext));//writes text to polynomials, may need to be parsed back to text (ASCII) or just sent in poly form
 				break;
 
 				case "decrypt": 
-				int[] dekey = string2arr(args[1]); //decrypts message using f fp q p and encrypted message
-                //each ciphertext block is fed into the function below
-                //args[3] is the message and args[2] contains fp,q,p and maybe n?
-				System.out.print(decrypt(dekey,args[2],args[3]));
+                //decrypts message using f fp q p and encrypted message
+				String[] keyarr = args[1].split(":"); //args[1] contains f, inverse fp, s and t both of form {a, b, c, d, e, f} concatenated {contentsf}:{contentsfp}:s:t
+                int[] dekey = string2arr(keyarr[0]); 
+                int[] inversekeyp = string2arr(keyarr[1]);
+                int s = Integer.parseInt(keyarr[2]);
+                int t = Integer.parseInt(keyarr[3]);
+                int[] npqd = string2arr(args[2]);
+                //each ciphertext block has its checksum removed and is then fed into the function below
+                //args[3] is the message and args[2] contains N,p,q,d 
+                int[] placeholderparsedciphertext = new int[] {1,-1,0,1,1,-1,0,1,-1};//converted from args[3] , may come in plaintext or polynomial form
+				System.out.print(decrypt(dekey,inversekeyp,npqd,placeholderparsedciphertext,s,t));
 				break;
 
 				case "privkeygen": System.out.print(privkeygen(args[1])); //generates f fp and fq from N and d
 				break;
 
-                //case "newpubkeygen" takes the private key f d and fq and generates a new public key
-                //break;
+                case "newpubkeygen": //takes the private key f, inversekey fq, p and q and generates a new public key
+                String[] keyarr = args[1].split(":");//args[1] contains f and inverse fp both of form {a, b, c, d, e, f} concatenated {contentsf}:{contentsfq}
+                int[] dekey = string2arr(keyarr[0]); 
+                int[] inversekeyq = string2arr(keyarr[1]);
+                int[] npqd = string2arr(args[2]);//args[2] contains npqd in form {n, p, q, d}
+                System.out.print(privkeygen(dekey, inversekeyq, npqd));
+                break;
 
 				default : System.out.println("Please append valid action and parameters to this class' call, i.e \"encrypt\", \"decrypt\" or \"keygen\". ");
 				break;
@@ -96,27 +110,26 @@ public class NTRU{
         return c;
     }
 
+    public static int[] randpoly(int n, int d){
+        int[] randy = new int[] {1,-1,0,1,1,-1,0,1,-1}; // replace this line with and algorithm that generates a random polynomial from L
+        return randy;
+    }
 
-	public static int[] encrypt(int[] key, String npq, String message){
-		int[] messag = new int[] {1,-1,0,1,1,-1,0,1,-1}; //placeholder for message converted to polynomial still fuzzy on the technique here
-        int[] polyfuzz = new int[] {1,1,1,-1,-1,-1,0,0,1};
-        //the following values are placeholders and should be extracted from args[2]
-        int n = 9;
-        int p = 3;
-        int q = 256;
-        int[] encryptedpoly = polymod(polyadd(starmultiply(polyfuzz,key),messag),q);
+	public static int[] encrypt(int[] key, int[] npqd, int[] message){
+		int n = npqd[0];
+        int p = npqd[1];
+        int q = npqd[2];
+        int d = npqd[3]; //unsure if actually need to know this yet
+        int[] polyfuzz = randpoly(n,d);
+        int[] encryptedpoly = polymod(polyadd(starmultiply(polyfuzz,key),message),q);
 		return encryptedpoly;
 	}
 
 
-	public static int[] decrypt(int[] key, String fqp, String ciphertext){
-		int[] ciph = new int[] {1,-1,0,1,1,-1,0,1,-1}; //placeholder for ciphertext converted to polynomial still fuzzy on the technique here
-        int[] fp = new int[] {1,-1,0,1,1,-1,0,1,-1};
-        int p=3;
-        int q=256;
-        int s =100;
-        int t =2;
-        int[] a = polymod(starmultiply(key,ciph),q);
+	public static int[] decrypt(int[] f, int[] fp, int[] npqd, int[] ciphertext, int s, int t){
+		int p=npqd[1];
+        int q=npqd[2];
+        int[] a = polymod(starmultiply(f,ciphertext),q);
         int[] b = new int[a.length];
         int sum;
         for (int i =0; i<b.length; i++){
@@ -128,7 +141,11 @@ public class NTRU{
             //System.out.println(b[i]);
         }
         int[] plaintextpoly = polymod(starmultiply(b,fp),p);
-
+        //
+        //
+        //put code to ensure checksum
+        //
+        //
 		return plaintextpoly;
 	}
 
@@ -138,12 +155,36 @@ public class NTRU{
     }
 
 
-    public static int[] newpubkeygen(String seed){
-        int[] ret = {1,2};
-        return ret;
+    public static int[] newpubkeygen(int[] f, int[] fq, int[] npqd){
+        int[] g = randpoly(npqd[0],npqd[3]);
+        int[] fg = starmultiply(f,g);
+        int[] pi = new int[f.length];
+        int[] h = new int[f.length];
+        fg = polymod(fg,npqd[1]);
+        int dif;
+        for (int i =0; i<pi.length; i++){
+            dif = npqd[1] - fg[i]; //maybe replace this with polysubtract method if i add that later
+            pi[i]=dif;
+            //System.out.println(pi[i]);
+        }
+        
+        int[] h = polymod(polyadd(starmultiply(pi,fq),g),npqd[2]);
+
+        return h;
     }
 }
 
+
+
+
+/******************************
+*TODO:
+*.determine precisely the set the private key f, pubkey seed g and polyfuzz are chosen from/write randpoly function
+*.determine how the message string will be encoded to polynomial form (checksum will be added to each plaintext block and then encoded)
+*.(important)implement polyinverse/privkeygen function
+*.write checksum verifying code
+*.(optional)add a polysubtract function?
+*******************************/
 /*
 
 public PolynomialMod inverse(int N, int mod) {
