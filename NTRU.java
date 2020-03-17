@@ -1,7 +1,8 @@
 import java.util.*;
+import java.lang.Math;
 
 public class NTRU{
-	public static void main (String[] args){
+	public static void main (String[] args){//args must be well chosen, i.e n>=2d and n is prime, P is prime (specifically its 3), q is coprime with p,
 		try{
 			switch(args[0]){
                 //the set L should possibly be well defined before this point with d 1s in every polynomial
@@ -9,24 +10,24 @@ public class NTRU{
                 case "encrypt": 
                 //args[1] pub key an array passed of form {a, b, c, d, ... z}, args[2] N p q d an array passed of form {N, p, q, d}, args[3] message (a plaintext string)
 				int[] enkey = string2arr(args[1]);
-                int[] npqd = string2arr(args[2]);
+                int[] npqden = string2arr(args[2]);
                 int[] placeholderparsedplaintext = new int[] {1,-1,0,1,1,-1,0,1,-1};//converted from args[3]
                 //break message into blocks, add checksum to the end of each block, and encrypt each one, To be implemented,
-				System.out.print(encrypt(enkey,npqd,placeholderparsedplaintext));//writes text to polynomials, may need to be parsed back to text (ASCII) or just sent in poly form
+				System.out.print(encrypt(enkey,npqden,placeholderparsedplaintext));//writes text to polynomials, may need to be parsed back to text (ASCII) or just sent in poly form
 				break;
 
 				case "decrypt": 
                 //decrypts message using f fp q p and encrypted message
-				String[] keyarr = args[1].split(":"); //args[1] contains f, inverse fp, s and t both of form {a, b, c, d, e, f} concatenated {contentsf}:{contentsfp}:s:t
-                int[] dekey = string2arr(keyarr[0]); 
-                int[] inversekeyp = string2arr(keyarr[1]);
-                int s = Integer.parseInt(keyarr[2]);
-                int t = Integer.parseInt(keyarr[3]);
-                int[] npqd = string2arr(args[2]);
+				String[] dekeyarr = args[1].split(":"); //args[1] contains f, inverse fp, s and t both of form {a, b, c, d, e, f} concatenated {contentsf}:{contentsfp}:s:t
+                int[] dekey = string2arr(dekeyarr[0]); 
+                int[] inversekeyp = string2arr(dekeyarr[1]);
+                int s = Integer.parseInt(dekeyarr[2]);
+                int t = Integer.parseInt(dekeyarr[3]);
+                int[] npqdde = string2arr(args[2]);
                 //each ciphertext block has its checksum removed and is then fed into the function below
                 //args[3] is the message and args[2] contains N,p,q,d 
                 int[] placeholderparsedciphertext = new int[] {1,-1,0,1,1,-1,0,1,-1};//converted from args[3] , may come in plaintext or polynomial form
-				System.out.print(decrypt(dekey,inversekeyp,npqd,placeholderparsedciphertext,s,t));
+				System.out.print(decrypt(dekey,inversekeyp,npqdde,placeholderparsedciphertext,s,t));
 				break;
 
 				case "privkeygen": System.out.print(privkeygen(args[1])); //generates f fp and fq from N and d
@@ -34,18 +35,29 @@ public class NTRU{
 
                 case "newpubkeygen": //takes the private key f, inversekey fq, p and q and generates a new public key
                 String[] keyarr = args[1].split(":");//args[1] contains f and inverse fp both of form {a, b, c, d, e, f} concatenated {contentsf}:{contentsfq}
-                int[] dekey = string2arr(keyarr[0]); 
+                int[] dekeypkg = string2arr(keyarr[0]); 
                 int[] inversekeyq = string2arr(keyarr[1]);
-                int[] npqd = string2arr(args[2]);//args[2] contains npqd in form {n, p, q, d}
-                System.out.print(privkeygen(dekey, inversekeyq, npqd));
+                int[] npqdpkg = string2arr(args[2]);//args[2] contains npqd in form {n, p, q, d}
+                System.out.print(newpubkeygen(dekeypkg, inversekeyq, npqdpkg));
                 break;
+
+                case "randpolydebug":
+                int n =Integer.parseInt(args[1]);
+                int d =Integer.parseInt(args[2]);
+                int[] rpd = randpoly(n,d,true);//n d
+                for(int i=0; i<n; i++){
+                	System.out.println(rpd[i]);
+                }
+                break;
+				
 
 				default : System.out.println("Please append valid action and parameters to this class' call, i.e \"encrypt\", \"decrypt\" or \"keygen\". ");
 				break;
 			}
 		}
 		catch(Exception e){
-			System.out.println("Please call this class with either encrypt, decrypt or keygen as args, followed by additional args \n encrypt/decrypt requires two additional args, a key and a message \n the key should be an array of coefficients of form {a1, a2, a3, ... aN-1, aN} with each ak an integer \n keygen requires one additional argument, a seed.");
+			System.out.println(e);
+			//System.out.println("Please call this class with either encrypt, decrypt or keygen as args, followed by additional args \n encrypt/decrypt requires two additional args, a key and a message \n the key should be an array of coefficients of form {a1, a2, a3, ... aN-1, aN} with each ak an integer \n keygen requires one additional argument, a seed.");
 		}
 		
 	}	
@@ -110,8 +122,29 @@ public class NTRU{
         return c;
     }
 
-    public static int[] randpoly(int n, int d){
-        int[] randy = new int[] {1,-1,0,1,1,-1,0,1,-1}; // replace this line with and algorithm that generates a random polynomial from L
+    public static int[] randpoly(int n, int d, boolean f){
+    	int posdcount=d;
+    	int negdcount=d;
+    	int currpos=0;
+    	if(f){posdcount++;}
+        int[] randy = new int[n];
+        
+        for(int i=n; i>0; i--){
+        	currpos= ((currpos+(int) Math.round(Math.random()*i))%n);//rand*i
+        	while(randy[currpos]!=0){currpos=(currpos+1)%n;}
+        	if(posdcount!=0){
+        		randy[currpos]=1;
+        		posdcount--;
+        	}
+        	else if(negdcount!=0){
+        		randy[currpos]=-1;
+        		negdcount--;
+        	}
+        	else{continue;}
+        }
+        //randomly set d positions in n to -1 and d positions to 1 
+        //start at position 0, move a random number of places less than n-loop iteration, if this position is 0 replace it with a 1 until all 1s are distributed, if position is not a 0 move position up until a 0 is found, repeat for -1s
+        //this randompoly algorithm could be improved for security, but at this level of abstraction it might be a non-issue
         return randy;
     }
 
@@ -120,7 +153,7 @@ public class NTRU{
         int p = npqd[1];
         int q = npqd[2];
         int d = npqd[3]; //unsure if actually need to know this yet
-        int[] polyfuzz = randpoly(n,d);
+        int[] polyfuzz = randpoly(n,d,false);
         int[] encryptedpoly = polymod(polyadd(starmultiply(polyfuzz,key),message),q);
 		return encryptedpoly;
 	}
@@ -150,16 +183,18 @@ public class NTRU{
 	}
 
     public static int[] privkeygen(String seed){
+    	int n =11;//placeholder
+    	int d =5;//placeholder
+    	int[] f =randpoly(n,d,false);
         int[] ret = {1,2};
         return ret;
     }
 
 
     public static int[] newpubkeygen(int[] f, int[] fq, int[] npqd){
-        int[] g = randpoly(npqd[0],npqd[3]);
+        int[] g = randpoly(npqd[0],npqd[3],false);
         int[] fg = starmultiply(f,g);
         int[] pi = new int[f.length];
-        int[] h = new int[f.length];
         fg = polymod(fg,npqd[1]);
         int dif;
         for (int i =0; i<pi.length; i++){
@@ -179,7 +214,6 @@ public class NTRU{
 
 /******************************
 *TODO:
-*.determine precisely the set the private key f, pubkey seed g and polyfuzz are chosen from/write randpoly function
 *.determine how the message string will be encoded to polynomial form (checksum will be added to each plaintext block and then encoded)
 *.(important)implement polyinverse/privkeygen function
 *.write checksum verifying code
