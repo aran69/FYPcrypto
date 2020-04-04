@@ -2,7 +2,9 @@ import java.util.*;
 import java.lang.Math;
 
 public class NTRU{
-	public static void main (String[] args){//args must be well chosen, i.e n>=2d and n is prime, P is prime (specifically its 3), q is coprime with p,
+	public static void main (String[] args){
+	//args must be well chosen, i.e n>=2d and n is prime, P is prime (specifically its 3), q is coprime with p,
+	//N must be large enough to carry a well encrypted message as well as a checksum
 		try{
 			switch(args[0]){
                 //the set L should possibly be well defined before this point with d 1s in every polynomial
@@ -30,7 +32,29 @@ public class NTRU{
 				System.out.print(decrypt(dekey,inversekeyp,npqdde,placeholderparsedciphertext,s,t));
 				break;
 
-				case "privkeygen": System.out.print(privkeygen(args[1])); //generates f fp and fq from N and d
+				case "privkeygen": 
+				int n =Integer.parseInt(args[1]);
+                int p =Integer.parseInt(args[2]);
+                int q =Integer.parseInt(args[3]);
+                int d =Integer.parseInt(args[4]);
+                p =3; // p will remain locked at 3 until i make a more adaptive ternary encoding
+                int[][] keys = privkeygen(n, p, q, d);
+                for(int i=0; i<keys.length; i++){
+                	if(i==0){
+                		System.out.print("f: ");
+                	}
+                	else if(i==1){
+                		System.out.print("fp: ");
+                	}
+                	else{
+                		System.out.print("fq: ");
+                	}
+                	for(int j=0; j<keys[i].length; j++){
+                		System.out.print(keys[i][j]+", ");
+                	}
+                	System.out.println();
+                	
+                } //generates f fp and fq from N and d
 				break;
 
                 case "newpubkeygen": //takes the private key f, inversekey fq, p and q and generates a new public key
@@ -42,12 +66,57 @@ public class NTRU{
                 break;
 
                 case "randpolydebug":
-                int n =Integer.parseInt(args[1]);
-                int d =Integer.parseInt(args[2]);
-                int[] rpd = randpoly(n,d,true);//n d
-                for(int i=0; i<n; i++){
-                	System.out.println(rpd[i]);
+                int na =Integer.parseInt(args[1]);
+                int da =Integer.parseInt(args[2]);
+                int[] rpd = randpoly(na,da,true);//n d
+                for(int i=0; i<na; i++){
+                	System.out.print(rpd[i]+", ");
                 }
+                break;
+
+                case "starmultiplydebug":
+                int[] e =string2arr(args[1]);
+                int[] f =string2arr(args[2]);
+                int[] b = starmultiply(e,f);
+                for(int i=0; i<b.length; i++){
+                	System.out.println(b[i]);
+                }
+                break;
+
+                case "tristarmultiplydebug":
+                int[] ee =string2arr(args[1]);
+                int[] ff =string2arr(args[2]);
+                int[] bbb = starmultiply(ee,ff);
+                bbb = polymodtri(bbb);
+                for(int i=0; i<bbb.length; i++){
+                	System.out.println(bbb[i]);
+                }
+                break;
+
+                case "polyinversepdebug":
+                int[] j =string2arr(args[1]);
+                int k =Integer.parseInt(args[2]);
+                int[] l = polyinversep(j,k);
+                System.out.println(" ");
+                System.out.print("{");
+                for(int i=0; i<l.length-1; i++){
+                	System.out.print(l[i]+", ");
+                }
+                System.out.print(l[l.length-1]+"}");
+                System.out.println("");
+                break;
+
+                case "xdivdebug":
+                int[] aa =string2arr(args[1]);
+                int[] bb = xdiv(aa);
+                for(int i=0; i<bb.length; i++){
+                	System.out.print(bb[i]+" ");
+                }
+                break;
+
+                case "getdegdebug":
+                int[] dd =string2arr(args[1]);
+                System.out.println(getdeg(dd));
                 break;
 				
 
@@ -87,6 +156,24 @@ public class NTRU{
         return c;
     }
 
+    public static int[] polysub(int[] a, int[] b){
+        int[] c = new int[a.length];
+        for (int i =0; i<c.length; i++){
+            c[i]=a[i]-b[i];
+            //System.out.println(c[i]);
+        }
+        return c;
+    }
+
+    public static int[] polyneg(int[] a){
+    	int[] c = new int[a.length];
+    	for (int i =0; i<c.length; i++){
+            c[i]=a[i]*-1;
+            //System.out.println(c[i]);
+        }
+        return c;
+    }
+
     public static int[] starmultiply(int[] a, int[] b){
         int[] c = new int[a.length];
         int summedcoeff;
@@ -107,6 +194,43 @@ public class NTRU{
         return c;
     }
 
+    public static int[] xdiv(int[] a){
+    	int[] c = new int[a.length];
+    	c[a.length-1]=0;
+        for (int i=0; i<a.length-1; i++){
+        	c[i]=a[i+1];
+        	if(c[i]==-2){
+        		c[i]=1;
+        	}
+        }
+        return c;
+    }
+
+    public static int[] ringxdiv(int[] a){
+    	int[] c = new int[a.length];
+    	c[a.length-1]=a[0];
+        for (int i=0; i<a.length-1; i++){
+        	c[i]=a[i+1];
+        	if(c[i]==-2){
+        		c[i]=1;
+        	}
+        }
+        return c;
+    }
+
+    public static int[] polymodtri(int[] a){
+    	int[] c =a;
+    	for (int i =0; i<c.length; i++){
+         	while(c[i]>1){
+         		c[i]-=3;
+         	}
+         	if(c[i]<-1){
+         		c[i]+=3;
+         	}
+            //System.out.println(c[i]);
+        }
+        return c;
+    }
 
     public static int[] polymod(int[] a, int mod){
         int[] c = a;
@@ -148,6 +272,257 @@ public class NTRU{
         return randy;
     }
 
+    public static int getdeg(int[] a){
+    	int out = a.length-1;
+    	for (int i =0; i<a.length; i++){
+            if(a[i]!=0){
+            	out=i;
+            }
+            //System.out.println(c[i]);
+        }
+        return out;
+    }
+
+
+
+    public static int[] polyinversep(int[] a, int inp){
+    	//System.out.println("in");
+    	int p = inp;
+    	int k = 0;
+    	int[] f = a;
+    	int[] x = new int[f.length];
+    	int[] c = new int[f.length];
+    	int[] g = new int[f.length];
+    	int[] b = new int[f.length];
+    	int[] goal = new int[f.length];
+    	int[] tempbc = new int[f.length];
+    	int[] tempfg = new int[f.length];
+    	int[] ones = new int[f.length];
+    	int[] zeros = new int[f.length];
+    	x[1]=1;
+    	
+    	for(int i=0; i<ones.length; i++){
+    		ones[i]=1;
+    	}
+
+    	for(int i=0; i<g.length; i++){
+    		g[i]=-1;
+    	}
+    			
+    	b[0]=1;
+    	goal[0]=1;
+    	int degf; 
+    	int degg; 
+    	boolean decided = false;
+    	int mm = 0; //arbitrary long loop count
+    	out:
+    	while(mm<(5*f.length) || decided==false){
+
+    		
+    		while(f[0]==0){
+    			//System.out.println("Round "+mm+" f[0]==0 iteration "+k);
+    			f = ringxdiv(f);
+    			c=starmultiply(c,x);
+    			if(k>100){
+    				decided = true;
+    				break out;
+    			}
+    			k++;
+    			//System.out.println("f:"+f[0]+" "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+f[5]+" "+f[6]+" "+f[7]+" "+f[8]+" "+f[9]+" "+f[10]);
+    			//System.out.println("c:"+c[0]+" "+c[1]+" "+c[2]+" "+c[3]+" "+c[4]+" "+c[5]+" "+c[6]+" "+c[7]+" "+c[8]+" "+c[9]+" "+c[10]);
+    			//System.out.println("k: "+k);
+    			
+    		}
+    		
+    		if(Arrays.equals(f, goal)){
+    			decided =true;
+    			break out;
+
+    		}
+
+    		else if (Arrays.equals(f, polyneg(goal))){
+    			b=polyneg(b);
+    			decided=true;
+    			break out; //negative case
+    		}
+
+    		degf =getdeg(f);
+    		degg =getdeg(g);
+    		if(degf<degg){ //exchange values
+    			//System.out.println("***EXCHANGE***");
+    			tempfg = f;
+    			f = g;
+    			g = tempfg;
+    			tempbc = b;
+    			b = c;
+    			c = tempbc;
+    		}
+
+			
+    		
+    		if(f[0]==g[0]){
+    			f=polymodtri(polysub(f,g));
+    			b=polymodtri(polysub(b,c));
+    		}
+    		else{
+    			f = polymodtri(polyadd(f,g));
+    			b = polymodtri(polyadd(b,c));
+    		}
+			
+    		
+
+    		
+    		//System.out.println(mm);
+    		//System.out.println("f :"+f[0]+" "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+f[5]+" "+f[6]+" "+f[7]+" "+f[8]+" "+f[9]+" "+f[10]);
+    		//System.out.println("g :"+g[0]+" "+g[1]+" "+g[2]+" "+g[3]+" "+g[4]+" "+g[5]+" "+g[6]+" "+g[7]+" "+g[8]+" "+g[9]+" "+g[10]);
+    		//System.out.println("b :"+b[0]+" "+b[1]+" "+b[2]+" "+b[3]+" "+b[4]+" "+b[5]+" "+b[6]+" "+b[7]+" "+b[8]+" "+b[9]+" "+b[10]);
+    		//System.out.println("c :"+c[0]+" "+c[1]+" "+c[2]+" "+c[3]+" "+c[4]+" "+c[5]+" "+c[6]+" "+c[7]+" "+c[8]+" "+c[9]+" "+c[10]);
+    		mm++;	
+    	}
+    	       
+    	//System.out.println("b :"+b[0]+" "+b[1]+" "+b[2]+" "+b[3]+" "+b[4]+" "+b[5]+" "+b[6]+" "+b[7]+" "+b[8]+" "+b[9]+" "+b[10]);
+    	//System.out.println("k :"+k);
+    	//System.out.println("Sorta done");
+    	
+		
+		if(decided==false){
+			return zeros;
+		}
+		 
+		for(int i=0; i<=b.length; i++){
+			for(int j=0; j<3; j++){
+				if(Arrays.equals(polymodtri(starmultiply(a,b)), goal)){
+					return b;
+					}
+				//System.out.println("i:"+i+"   j:"+j);
+				b = polymodtri(polyadd(b,ones));	
+			}
+			b = ringxdiv(b);
+		}
+    	
+    	return zeros;
+    }
+
+
+    public static int[] polyinverseq(int[] a, int q){
+    	//System.out.println("in");
+    	int k = 0;
+    	int[] f = a;
+    	int[] x = new int[f.length];
+    	int[] c = new int[f.length];
+    	int[] g = new int[f.length];
+    	int[] b = new int[f.length];
+    	int[] goal = new int[f.length];
+    	int[] tempbc = new int[f.length];
+    	int[] tempfg = new int[f.length];
+    	int[] ones = new int[f.length];
+    	int[] zeros = new int[f.length];
+    	x[1]=1;
+    	
+    	for(int i=0; i<ones.length; i++){
+    		ones[i]=1;
+    	}
+
+    	for(int i=0; i<g.length; i++){
+    		g[i]=-1;
+    	}
+    			
+    	b[0]=1;
+    	goal[0]=1;
+    	int degf; 
+    	int degg; 
+    	boolean decided = false;
+    	int mm = 0; //arbitrary long loop count
+    	out:
+    	while(mm<(5*f.length) && decided==false){
+
+    		
+    		while(f[0]==0){
+    			System.out.println("Round "+mm+" f[0]==0 iteration "+k);
+    			f = ringxdiv(f);
+    			c=starmultiply(c,x);
+    			if(k>100){
+    				decided = true;
+    				break out;
+    			}
+    			k++;
+    			//System.out.println("f:"+f[0]+" "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+f[5]+" "+f[6]+" "+f[7]+" "+f[8]+" "+f[9]+" "+f[10]);
+    			//System.out.println("c:"+c[0]+" "+c[1]+" "+c[2]+" "+c[3]+" "+c[4]+" "+c[5]+" "+c[6]+" "+c[7]+" "+c[8]+" "+c[9]+" "+c[10]);
+    			//System.out.println("k: "+k);
+    			
+    		}
+    		
+    		if(Arrays.equals(f, goal)){
+    			decided =true;
+    			break out;
+
+    		}
+
+    		else if (Arrays.equals(f, polyneg(goal))){
+    			b=polyneg(b);
+    			decided=true;
+    			break out; //negative case
+    		}
+
+    		degf =getdeg(f);
+    		degg =getdeg(g);
+    		if(degf<degg){ //exchange values
+    			//System.out.println("***EXCHANGE***");
+    			tempfg = f;
+    			f = g;
+    			g = tempfg;
+    			tempbc = b;
+    			b = c;
+    			c = tempbc;
+    		}
+
+			
+    		
+    		if(f[0]==g[0]){
+    			f=polymod(polysub(f,g),q);
+    			b=polymod(polysub(b,c),q);
+    		}
+    		else{
+    			f = polymod(polyadd(f,g),q);
+    			b = polymod(polyadd(b,c),q);
+    		}
+			
+    		
+
+    		
+    		System.out.println(mm);
+    		//System.out.println("f :"+f[0]+" "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+f[5]+" "+f[6]+" "+f[7]+" "+f[8]+" "+f[9]+" "+f[10]);
+    		//System.out.println("g :"+g[0]+" "+g[1]+" "+g[2]+" "+g[3]+" "+g[4]+" "+g[5]+" "+g[6]+" "+g[7]+" "+g[8]+" "+g[9]+" "+g[10]);
+    		//System.out.println("b :"+b[0]+" "+b[1]+" "+b[2]+" "+b[3]+" "+b[4]+" "+b[5]+" "+b[6]+" "+b[7]+" "+b[8]+" "+b[9]+" "+b[10]);
+    		//System.out.println("c :"+c[0]+" "+c[1]+" "+c[2]+" "+c[3]+" "+c[4]+" "+c[5]+" "+c[6]+" "+c[7]+" "+c[8]+" "+c[9]+" "+c[10]);
+    		mm++;	
+    	}
+    	       
+    	//System.out.println("b :"+b[0]+" "+b[1]+" "+b[2]+" "+b[3]+" "+b[4]+" "+b[5]+" "+b[6]+" "+b[7]+" "+b[8]+" "+b[9]+" "+b[10]);
+    	//System.out.println("k :"+k);
+    	System.out.println("Sorta done");
+    	
+		
+		if(decided==false){
+			return zeros;
+		}
+		 
+		for(int i=0; i<=b.length; i++){
+			for(int j=0; j<q; j++){
+				if(Arrays.equals(polymod(starmultiply(a,b),q), goal)){
+					return b;
+					}
+				//System.out.println("i:"+i+"   j:"+j);
+				b = polymod(polyadd(b,ones),q);	
+			}
+			b = ringxdiv(b);
+		}
+    	
+    	return zeros;
+    }
+
+
+
 	public static int[] encrypt(int[] key, int[] npqd, int[] message){
 		int n = npqd[0];
         int p = npqd[1];
@@ -182,11 +557,20 @@ public class NTRU{
 		return plaintextpoly;
 	}
 
-    public static int[] privkeygen(String seed){
-    	int n =11;//placeholder
-    	int d =5;//placeholder
-    	int[] f =randpoly(n,d,false);
-        int[] ret = {1,2};
+    public static int[][] privkeygen(int n, int p, int q, int d){ //done: generate f . fenerate fp    not done: generate fq
+    	int[][] ret = new int[3][n];
+    	int[] zeros = new int[n];
+    	int[] f = randpoly(n, d, true);
+    	int[] fp = polyinversep(f, 0);
+    	while(Arrays.equals(fp,zeros)) {
+    		f= randpoly(n, d, true);
+    		fp = polyinversep(f, 0);
+    	}
+    	int[] fq=polyinverseq(f,q);
+    	ret[0]=f;
+    	ret[1]=fp;
+    	ret[2]=fq;
+
         return ret;
     }
 
@@ -207,6 +591,8 @@ public class NTRU{
 
         return h;
     }
+
+
 }
 
 
@@ -221,127 +607,110 @@ public class NTRU{
 *******************************/
 /*
 
-public PolynomialMod inverse(int N, int mod) {
-    int loop = 0;
-    PolynomialMod G = PolynomialMod.ZERO.clone();
-    G.setNMod(N, mod);
-    PolynomialMod newG = (PolynomialMod) PolynomialMod.ONE.clone();
-    newG.setNMod(N, mod);
-    int[] coeffR = { 1, 1, 0, 1, 1, 0, 0, 0, 1 };
 
-    PolynomialMod quotient = null;
-    PolynomialMod newR = this.clone();
-    PolynomialMod R = this.getRing(N, mod);
-    R.setNMod(N, mod);
-    newR.setNMod(N, mod);
 
-    while (!newR.equalsZero()) {
-        if (DEBUG && loop != 0)
-            System.out.println("loop: " + loop);
-        if (DEBUG && loop == 0)
-            System.out.println("========Initial Values========");
-        if (DEBUG)
-            System.out.println("R   : " + R);
-        if (DEBUG)
-            System.out.println("newR: " + newR);
-        if (DEBUG)
-            System.out.println("Quotient: " + quotient);
-        if (DEBUG)
-            System.out.println("G   : " + G);
-        if (DEBUG)
-            System.out.println("newG: " + newG);
-        if (DEBUG && loop == 0)
-            System.out.println("========Initial Values========");
-        if (DEBUG)
-            System.out.println("\n");
 
-        quotient = R.div(newR)[0];
-        PolynomialMod help = R.clone();
-        R = newR.clone();
-        PolynomialMod times = quotient.times(newR);
-        times.reduceBetweenZeroAndQ();
-        newR = help.sub(times);
-        newR.deleteLeadingZeros();
-        newR.degree = newR.values.size() - 1;
-        help = G.clone();
-        G = newG.clone();
-        PolynomialMod times2 = quotient.times(newG);
-        times2.reduceBetweenZeroAndQ();
-        newG = help.sub(times2);
-        loop++;
+/*
+public static int[] polyinversepnythebook(int[] a, int inp){
+    	System.out.println("in");
+    	int p = inp;
+    	int k = 0;
+    	int[] f = a;
+    	int[] x = new int[f.length];
+    	int[] c = new int[f.length];
+    	int[] g = new int[f.length];
+    	int[] b = new int[f.length];
+    	int[] goal = new int[f.length];
+    	int[] tempbc = new int[f.length];
+    	int[] tempfg = new int[f.length];
+    	x[1]=1;
+    	for(int i=0; i<g.length; i++){
+    		g[i]=-1;
+    	}
+    	System.out.println("g:"+g[0]+" "+g[1]+" "+g[2]+" "+g[3]+" "+g[4]+" "+g[5]+" "+g[6]+" "+g[7]+" "+g[8]+" "+g[9]+" "+g[10]);
+    			
+    	b[0]=1;
+    	goal[0]=1;
+    	int degf; 
+    	int degg; 
+    	boolean er = false;
+    	int mm = 900; //arbitrary long loop count
+    	out:
+    	while(mm>0 && er==false){
 
+    		if(mm==889){//error catching
+    			System.out.println("k:"+k);
+    			System.out.println("f:"+f[0]+" "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+f[5]+" "+f[6]+" "+f[7]+" "+f[8]+" "+f[9]+" "+f[10]);
+    			System.out.println("g:"+g[0]+" "+g[1]+" "+g[2]+" "+g[3]+" "+g[4]+" "+g[5]+" "+g[6]+" "+g[7]+" "+g[8]+" "+g[9]+" "+g[10]);
+    			System.out.println("b:"+b[0]+" "+b[1]+" "+b[2]+" "+b[3]+" "+b[4]+" "+b[5]+" "+b[6]+" "+b[7]+" "+b[8]+" "+b[9]+" "+b[10]);
+    			System.out.println("c:"+c[0]+" "+c[1]+" "+c[2]+" "+c[3]+" "+c[4]+" "+c[5]+" "+c[6]+" "+c[7]+" "+c[8]+" "+c[9]+" "+c[10]);
+    			System.out.println();
+    			System.out.println();
+    		}
+    		while(f[0]==0){
+    			System.out.println("Round "+mm+" f[0]==0 iteration "+k);
+    			f = ringxdiv(f);
+    			c=starmultiply(c,x);
+    			if(mm<850 || k>100){
+    				er = true;
+    				break out;
+    			}
+    			System.out.println("f:"+f[0]+" "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+f[5]+" "+f[6]+" "+f[7]+" "+f[8]+" "+f[9]+" "+f[10]);
+    			System.out.println("c:"+c[0]+" "+c[1]+" "+c[2]+" "+c[3]+" "+c[4]+" "+c[5]+" "+c[6]+" "+c[7]+" "+c[8]+" "+c[9]+" "+c[10]);
+    			System.out.println("k: "+k);
+    			k++;
+    		}
+    		if(f==goal){
+    			return b;//to include shift this polynomial k places to the right(left?)
+    		}
+    		else if (f==polyneg(goal)){
+    			return polyneg(b); //negative case
+    			//to include shift this polynomial k places to the right(left?)
+    		}
+    		degf =getdeg(f);
+    		degg =getdeg(g);
+    		if(degf<degg){ //exchange values
+    			System.out.println("***EXCHANGE***");
+    			tempfg = f;
+    			f = g;
+    			g = tempfg;
+    			tempbc = b;
+    			b = c;
+    			c = tempbc;
+    		}
+
+    		if(mm<850 || k>100){
+    				er = true;
+    				break out;
+    		}
+
+			
+    		
+    		if(f[0]==g[0]){
+    			f=polymodtri(polysub(f,g));
+    			b=polymodtri(polysub(b,c));
+    		}
+    		else{
+    			f = polymodtri(polyadd(f,g));
+    			b = polymodtri(polyadd(b,c));
+    		}
+			
+    		//for(int i=0; i<b.length; i++){
+            //    	System.out.print(" "+b[i]);
+            //    }
+
+    		
+    		System.out.println(mm);
+    		System.out.println("f :"+f[0]+" "+f[1]+" "+f[2]+" "+f[3]+" "+f[4]+" "+f[5]+" "+f[6]+" "+f[7]+" "+f[8]+" "+f[9]+" "+f[10]);
+    		System.out.println("g :"+g[0]+" "+g[1]+" "+g[2]+" "+g[3]+" "+g[4]+" "+g[5]+" "+g[6]+" "+g[7]+" "+g[8]+" "+g[9]+" "+g[10]);
+    		System.out.println("b :"+b[0]+" "+b[1]+" "+b[2]+" "+b[3]+" "+b[4]+" "+b[5]+" "+b[6]+" "+b[7]+" "+b[8]+" "+b[9]+" "+b[10]);
+    		System.out.println("c :"+c[0]+" "+c[1]+" "+c[2]+" "+c[3]+" "+c[4]+" "+c[5]+" "+c[6]+" "+c[7]+" "+c[8]+" "+c[9]+" "+c[10]);
+    		mm--;	
+    	}
+    	//for(int i=0; i<x.length; i++){
+        //        	System.out.print("in "+x[i]);
+        //       }
+
+    	return b;
     }
-    if (R.getDegree() > 0)
-        throw new ArithmeticException("irreducible or multiple");
-
-    return G.div(R)[0];
-}
-
-
-
-public void inverseEuclid(int N, int mod) {
-    PolynomialMod a= this.clone();
-    PolynomialMod b= getRing(N,mod);
-    PolynomialMod u = PolynomialMod.ONE.clone();
-    u.setNMod(N, mod);
-    PolynomialMod v1 = PolynomialMod.ZERO.clone();
-    v1.setNMod(N, mod);
-    PolynomialMod d = this.clone();
-    PolynomialMod v3 = b.clone(); 
-
-    while(!v3.equalsZero()) {
-        System.out.println("========values========");
-        System.out.println("d : "+d);
-        System.out.println("v3: "+v3);
-        PolynomialMod [] div = d.div(v3);
-        PolynomialMod q =  div[0].clone();
-        System.out.println("q : "+q);
-        PolynomialMod t3 =  div[1].clone();
-        System.out.println("t3: "+t3);
-        PolynomialMod t1 = u.sub(q.convolution(v1));
-        System.out.println("t1: "+t1);
-        System.out.println("========values========\n\n");
-
-        u = v1.clone();
-        d = v3.clone();
-        v1= t1.clone();
-        v3=t3.clone();
-
-        u.deleteLeadingZeros();
-        d.deleteLeadingZeros();
-        v1.deleteLeadingZeros();
-        v3.deleteLeadingZeros();
-    }
-    PolynomialMod v = d.sub(a.convolution(u)).div(b)[0];
-    System.out.println("u: "+u);
-    System.out.println("v: "+v);
-    System.out.println("d: "+d);
-}
-
-
-
-public PolynomialMod[] div(final PolynomialMod other) {
-    if (other.isZero())
-        throw new ArithmeticException("division by zero");
-    final int degreeDifference = this.getDegree() - other.getDegree() + 1;
-    if (degreeDifference <= 0)
-        return new PolynomialMod[] { PolynomialMod.ZERO, this };
-
-    final PolynomialMod rest = this.clone();
-    final PolynomialMod quotient = new PolynomialMod(degreeDifference - 1, N, mod);
-    final int otherDegree = other.getDegree();
-    final int coeff = other.values.get(otherDegree);
-    for (int i = degreeDifference - 1; i >= 0; i--) {
-        final int q = MyMath.divMod(rest.values.get(otherDegree + i), coeff, mod);
-
-        quotient.values.set(i, q);
-        for (int j = 0; j <= otherDegree; j++) {
-            int restHelp = ((rest.values.get(i + j) - q * other.values.get(j)) + mod) % mod;
-            rest.values.set(i + j, restHelp);
-        }
-    }
-    return new PolynomialMod[] { new PolynomialMod(quotient.values, N, mod),
-            new PolynomialMod(rest.values, N, mod) };
-}
-
-*/ 
+*/
