@@ -47,7 +47,7 @@ public class NTRU{
                 printarr(keys[1]);
                 System.out.print("fq: ");
                 printarr(keys[2]);
-                System.out.println("h: ");
+                System.out.print("h: ");
                 printarr(keys[3]);
                 System.out.println("s: "+shiftST[0]);
                 System.out.println("T: "+shiftST[1]);
@@ -428,7 +428,9 @@ public class NTRU{
     		f= randpoly(n, d, true);
     		fp = polyinversep(f, 0);
     	}
-    	int[] fq = brutpolyinverseq(f, 0);
+    	printarr(f);
+    	printarr(fp);
+    	int[] fq = brutpolyinverseq(f, q);
     	//int[] fq=polyinverseq(f,q)
     	int[] npqd = {n,p,q,d};
     	int[] h = newpubkeygen(f, fq, npqd);
@@ -468,12 +470,21 @@ public class NTRU{
     	int[] ret = new int[a.length];
     	one[0]=1;
     	int[] fin = new int[a.length];
+    	boolean debugflag = true;
     	for(int i=0; i<fin.length; i++){
     		fin[i]=q-1;
     	}
-    	while(!Arrays.equals(one,polymod(starmultiply(a,ret),q))&&!Arrays.equals(ret,fin)){
-    		//printarr(ret);
+    	if(a[0]==44){
+    		debugflag=false;
+    	}
+    	
+    	while(false==(Arrays.equals(ret,fin))){
+    		if(Arrays.equals(one,polymod(starmultiply(a,ret),q))){
+    			return ret;
+    		}
+            //printarr(ret);
     		for(int i=0; i<a.length; i++){
+    		
     			if(ret[i]<q-1){
     				ret[i]++;
     				break;
@@ -482,14 +493,13 @@ public class NTRU{
     				ret[i]=0;
     			}
     		}
-    	}
-    	if(Arrays.equals(one,polymod(starmultiply(a,ret),q))){
-    		return ret;
-    	}
-    	else{
-    		return one;
+    		
     	}
     	
+    	
+    	return one;
+    	
+    
     	
     }
 
