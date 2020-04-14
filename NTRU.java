@@ -33,7 +33,7 @@ public class NTRU{
                 int p =npqd[1];
                 int q =npqd[2];
                 int d =npqd[3];
-                p =3; // p will remain locked at 3 until i make a more adaptive ternary encoding
+                p = 3; // p will remain locked at 3 until i make a more adaptive ternary encoding
                 float[] shiftST = new float[2];
                 shiftST[0]=s(n,p,q,d);
                 shiftST[0]=t(n,p,q,d);
@@ -153,6 +153,126 @@ public class NTRU{
         return c;
     }
 
+    public static int[] polyneg(int[] a){
+        int[] c = new int[a.length];
+        for (int i =0; i<c.length; i++){
+            c[i]=a[i]*-1;
+            //System.out.println(c[i]);
+        }
+        return c;
+    }
+
+    public static int[] dotmult(int[] a, int b){
+
+        int[] ret = new int[a.length];
+        for(int i=0; i<ret.length; i++) {
+            
+           ret[i] = a[i]*b;
+        }
+        return ret;
+    }
+
+    public static int[] ringxdiv(int[] a){
+        int[] c = new int[a.length];
+        c[a.length-1]=a[0];
+        for (int i=0; i<a.length-1; i++){
+            c[i]=a[i+1];
+            if(c[i]==-2){
+                c[i]=1;
+            }
+        }
+        return c;
+    }
+
+    public static int[] dotdiv(int[] a, int b){
+
+        int[] ret = new int[a.length];
+        for(int i=0; i<ret.length; i++) {
+
+            //System.out.println("dotdiv loop : "+b);
+           ret[i] = a[i]/b;
+        }
+        return ret;
+    }
+
+    public static int[] polymodtri(int[] a){
+        int[] c =a;
+        for (int i =0; i<c.length; i++){
+            while(c[i]>1){
+                c[i]-=3;
+            }
+            if(c[i]<-1){
+                c[i]+=3;
+            }
+            //System.out.println(c[i]);
+        }
+        return c;
+    }
+
+    public static int[] polymod(int[] a, int mod){
+        int[] c = a;
+        for (int i =0; i<c.length; i++){
+            while(c[i]<0){
+                c[i]+=mod;
+            }
+            while(c[i]>=mod){
+                c[i]-=mod;
+            }
+            //System.out.println(c[i]);
+        }
+        return c;
+    }
+
+    public static int getdeg(int[] a){
+        int out = -1;
+        for (int i =0; i<a.length; i++){
+            if(a[i]!=0){
+                out=i;
+            }
+            //System.out.println(c[i]);
+        }
+        return out;
+    }
+
+    public static int ringmod(int a, int b){
+        int ret;
+        int temp = a;
+        if(a>0){
+            ret=a%b;
+        }
+        else if(a==0){
+            ret=0;
+        }
+        else{
+            while(temp<0){
+                temp+=b;
+            }
+        }
+
+        return temp;
+    }
+
+    public static int elementsum(int[] a){
+        int out=0;
+        for(int i=0; i<a.length; i++){
+            out+=a[i];
+        }
+        return out;
+    }
+
+    public static int[] xdiv(int[] a){
+        int[] c = new int[a.length];
+        c[a.length-1]=0;
+        for (int i=0; i<a.length-1; i++){
+            c[i]=a[i+1];
+            if(c[i]==-2){
+                c[i]=1;
+            }
+        }
+        return c;
+    }
+
+    
     public static float s(int n, int p, int q, int d){
     	float fq =q;
     	float fd =d;
@@ -179,38 +299,20 @@ public class NTRU{
         return ret; 
     }
 
-    public static int[] polyneg(int[] a){
-    	int[] c = new int[a.length];
-    	for (int i =0; i<c.length; i++){
-            c[i]=a[i]*-1;
-            //System.out.println(c[i]);
+    
+
+
+
+    
+
+
+    public static void printarr(int[] a){
+        for(int i=0; i<a.length-1; i++){
+            System.out.print(a[i]+", ");    
         }
-        return c;
+        System.out.println(a[a.length-1]);
     }
-
-
-
-    public static int[] dotmult(int[] a, int b){
-
-        int[] ret = new int[a.length];
-       	for(int i=0; i<ret.length; i++) {
-    		
-           ret[i] = a[i]*b;
-       	}
-       	return ret;
-    }
-
-
-    public static int[] dotdiv(int[] a, int b){
-
-        int[] ret = new int[a.length];
-       	for(int i=0; i<ret.length; i++) {
-
-       		//System.out.println("dotdiv loop : "+b);
-           ret[i] = a[i]/b;
-       	}
-       	return ret;
-    }
+    
     
 
     public static int[] starmultiply(int[] a, int[] b){
@@ -233,57 +335,8 @@ public class NTRU{
         return c;
     }
 
-    public static int[] xdiv(int[] a){
-    	int[] c = new int[a.length];
-    	c[a.length-1]=0;
-        for (int i=0; i<a.length-1; i++){
-        	c[i]=a[i+1];
-        	if(c[i]==-2){
-        		c[i]=1;
-        	}
-        }
-        return c;
-    }
 
-    public static int[] ringxdiv(int[] a){
-    	int[] c = new int[a.length];
-    	c[a.length-1]=a[0];
-        for (int i=0; i<a.length-1; i++){
-        	c[i]=a[i+1];
-        	if(c[i]==-2){
-        		c[i]=1;
-        	}
-        }
-        return c;
-    }
-
-    public static int[] polymodtri(int[] a){
-    	int[] c =a;
-    	for (int i =0; i<c.length; i++){
-         	while(c[i]>1){
-         		c[i]-=3;
-         	}
-         	if(c[i]<-1){
-         		c[i]+=3;
-         	}
-            //System.out.println(c[i]);
-        }
-        return c;
-    }
-
-    public static int[] polymod(int[] a, int mod){
-        int[] c = a;
-        for (int i =0; i<c.length; i++){
-            while(c[i]<0){
-                c[i]+=mod;
-            }
-            while(c[i]>=mod){
-                c[i]-=mod;
-            }
-            //System.out.println(c[i]);
-        }
-        return c;
-    }
+    
 
     public static int[] randpoly(int n, int d, boolean f){
     	int posdcount=d;
@@ -313,95 +366,21 @@ public class NTRU{
 
 
 
-    public static int getdeg(int[] a){
-    	int out = -1;
-    	for (int i =0; i<a.length; i++){
-            if(a[i]!=0){
-            	out=i;
-            }
-            //System.out.println(c[i]);
-        }
-        return out;
-    }
 
 
 
     
 
-    public static int ringmod(int a, int b){
-    	int ret;
-    	int temp = a;
-    	if(a>0){
-    		ret=a%b;
-    	}
-    	else if(a==0){
-    		ret=0;
-    	}
-    	else{
-    		while(temp<0){
-    			temp+=b;
-    		}
-    	}
-
-    	return temp;
-    }
 
 
-    public static void printarr(int[] a){
-    	for(int i=0; i<a.length-1; i++){
-    		System.out.print(a[i]+", ");	
-    	}
-    	System.out.println(a[a.length-1]);
-    }
 
     
 
 
 
-    public static int[] one2onemult(int[] a, int[] b){
-    	int[] ret = new int[a.length];
-    	for(int i=0; i<a.length; i++){
-    		ret[i] = a[i]*b[i];
-    	}
-    	return ret;
-    }
-
-    public static int elementsum(int[] a){
-    	int out=0;
-    	for(int i=0; i<a.length; i++){
-    		out+=a[i];
-    	}
-    	return out;
-    }
+    
 
 
-    public static int divtozero(int num, int div, int mod){
-    	int dividend = 0;
-    	int divdown = num;
-    	//System.out.println("Entering divtozero...");
-    	while(divdown!=0){
-    		divdown-=div;
-    		if(divdown<0){
-    			divdown+=mod;
-    		}
-    		if(divdown>=mod){
-    			divdown-=mod;
-    		}
-    		dividend++;
-    	}
-    	//System.out.println("Exiting divtozero...");
-    	
-    	return dividend;
-    }
-
-	
-    public static int[] divtozeroarr(int[] arr, int div, int mod){
-    	int[] ret = arr;
-    	for(int i=0; i<arr.length; i++){
-    		ret[i]=divtozero(ret[i],div,mod);
-    	}
-    	return ret;
-    }
 
 
 	public static int[] encrypt(int[] key, int[] npqd, int[] message){
@@ -490,8 +469,17 @@ public class NTRU{
 
 
 
-
-
+/*
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+ALL METHODS BELOW ARE UNFINISHED/UNSCUCCESSFUL AND REMAIN HERE
+FOR POSSIBLE FUTURE DEVELOPMENT, THEY ARE NOT USED IN THE MAIN
+CLASS OR BY ANY OF THE METHODS APPEARING IN THE MAIN CLASS
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+*/
     public static int[] brutpolyinverseq(int[] a, int q){
     	System.out.println("Searching for inverse fq...");
     	int[] one = new int[a.length];
@@ -652,6 +640,45 @@ public class NTRU{
 		}
     	
     	return zeros;
+    }
+
+
+public static int[] one2onemult(int[] a, int[] b){
+        int[] ret = new int[a.length];
+        for(int i=0; i<a.length; i++){
+            ret[i] = a[i]*b[i];
+        }
+        return ret;
+    }
+
+
+
+    public static int divtozero(int num, int div, int mod){
+        int dividend = 0;
+        int divdown = num;
+        //System.out.println("Entering divtozero...");
+        while(divdown!=0){
+            divdown-=div;
+            if(divdown<0){
+                divdown+=mod;
+            }
+            if(divdown>=mod){
+                divdown-=mod;
+            }
+            dividend++;
+        }
+        //System.out.println("Exiting divtozero...");
+        
+        return dividend;
+    }
+
+    
+    public static int[] divtozeroarr(int[] arr, int div, int mod){
+        int[] ret = arr;
+        for(int i=0; i<arr.length; i++){
+            ret[i]=divtozero(ret[i],div,mod);
+        }
+        return ret;
     }
 
 
