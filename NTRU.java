@@ -23,8 +23,6 @@ public class NTRU{
                 float s = Float.parseFloat(args[3]);//args[3]
                 float t = Float.parseFloat(args[4]);//args[4]
                 int[] npqdde = string2arr(args[5]);//args[5]
-                //each ciphertext block has its checksum removed and is then fed into the function below
-                //args[3] is the message and args[2] contains N,p,q,d 
                 int[] ciphertext = string2arr(args[6]);//args[6]
 				printarr(decrypt(dekey,inversekeyp,npqdde,ciphertext,s,t));//f,fp,npqd,ciphertext,s,t
 				break;
@@ -63,12 +61,47 @@ public class NTRU{
                 case "starmultiplydebug":
                 int[] e =string2arr(args[1]);
                 int[] f =string2arr(args[2]);
+                int modul=Integer.parseInt(args[3]);
                 int[] b = starmultiply(e,f);
+                if(modul==3){
+                    b=polymodtri(b);
+                }
+                else{
+                    b=polymod(b,modul);
+                }
                 printarr(b);
                 break;
 
                 case "unittest":
-                printarr(unitmethod(string2arr(args[1])));
+                int[] adekey = string2arr(args[1]); //args[1]
+                int[] ainversekeyp = string2arr(args[2]);//args[2]
+                float as = Float.parseFloat(args[3]);//args[3]
+                float at = Float.parseFloat(args[4]);//args[4]
+                int[] anpqdde = string2arr(args[5]);//args[5]
+                int[] aciphertext = string2arr(args[6]);//args[6]
+                int[] agoal = string2arr(args[7]);
+                while(false==Arrays.equals(decrypt(adekey, ainversekeyp, anpqdde, aciphertext, as, at),agoal)){
+                    if(as<=0){
+                        as*=-1;
+                        as++;
+                    }
+                    else{
+                        as*=-1;
+                    }
+                    //System.out.println("S: "+as);
+                    if(Arrays.equals(decrypt(adekey, ainversekeyp, anpqdde, aciphertext, as, at),agoal)){
+                        break;
+                    }
+                    if(as>(anpqdde[2]*2)){
+                        break;
+                    }
+                }
+                if(as>(anpqdde[2]*2)){
+                    System.out.println("Gap failure, message incapable of being decoded.");
+                }
+                else{
+                    printarr(decrypt(adekey, ainversekeyp, anpqdde, aciphertext, as, at));    
+                }
                 break;
 
 				default : 
@@ -120,7 +153,7 @@ public class NTRU{
         return c;
     }
 
-    public static float s(int q, int d, int p, int n){
+    public static float s(int n, int p, int q, int d){
     	float fq =q;
     	float fd =d;
     	float fp =p;
@@ -128,20 +161,22 @@ public class NTRU{
     	float exp = (float)Math.pow(fd,3);
     	float ret = 0f;
     	ret=(fq/2)+(fd*(fp-1))+(exp/fn);
-    	ret = ret%fq;
+    	//ret = (fq/2)+(fp-2);
+        ret = ret%fq;
     	return ret;
     }
 
-    public static float t(int q, int d, int p, int n){
+    public static float t(int n, int p, int q, int d){
     	float fq =q;
     	float fd =d;
     	float fp =p;
     	float fn =n;
     	float exp = (float)Math.pow(fd,3);
     	float ret = 0f;	
-    	ret = (fd*(fp-1)+(exp/fn))/fq;
+    	ret = (fd*(fp-1)+(exp/fn));
     	ret = ret%fp;
-    	return ret;
+    	//float ret = 0.0f;
+        return ret; 
     }
 
     public static int[] polyneg(int[] a){
@@ -319,13 +354,7 @@ public class NTRU{
     	System.out.println(a[a.length-1]);
     }
 
-    public static int[] unitmethod(int[] a){
-    	int[] ret =new int[a.length];
-    	int[] fq =new int[a.length];
-    	ret[0]=5; ret[1]=9; ret[2]=6; ret[3]=16;ret[4]=4; ret[5]=15; ret[6]=16; ret[7]=22; ret[8]=20; ret[9]=18; ret[10]=30; 
-    	ret = polymod(starmultiply(a,ret),32);
-    	return ret;
-    }
+    
 
 
 
@@ -394,7 +423,6 @@ public class NTRU{
         
         int sum;
         int inT = Math.round(t);
-        int inS = Math.round(s);
         for (int i =0; i<b.length; i++){
             sum = a[i]+inT;
             if(a[i]>=s){
@@ -610,7 +638,12 @@ public class NTRU{
 		for(int i=0; i<=b.length; i++){
 			for(int j=0; j<3; j++){
 				if(Arrays.equals(polymodtri(starmultiply(a,b)), goal)){
-					return b;
+					for(int kk=0; kk<b.length; kk++){
+                        if(b[kk]==(-1)){
+                            b[kk]=2;
+                        }
+                    }
+                    return b;
 					}
 				//System.out.println("i:"+i+"   j:"+j);
 				b = polymodtri(polyadd(b,ones));	
