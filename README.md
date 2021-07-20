@@ -58,12 +58,12 @@ the format of these arguments is:
 		the values n, p, q and d are integers and public knowledge, make sure to keep a comma and space between each integer, and that this is passed as an "array-like string", that is it is entered with the quotation marks and curly brackets in the command line/terminal.
 
 	<f>/<fp>/<plaintextblock>: "{f1, f2, ... fn-1, fn}"
-		each of these "string arrays" have length of n, as passed in the string array <npqd> described above, furthermore, each element fx is either a; 0, 1, or -1. (the modulus of each element is p as passed in the string array <npqd> but is currently hardcoded at 3 regardless of input).
-		note: fp can instead use 0, 1 or 2 instead of 0, 1 or -1;
+		each of these "array-like strings" have length of n, as passed in the string array <npqd> described above, furthermore, each element fx is either a '0', '1', or '-1'. (the modulus of each element is p as passed in the string array <npqd> but is currently hardcoded at 3 regardless of input).
+		note: fp can instead use '0', '1' and '2' instead of '0', '1' and '-1';
 		Ensure quotation marks, brackets, commas and spaces are entered as mentioned above.
 
 	<h>/<fq>/<ciphertextblock>: "{h1, h2, ... hn-1, hn}"
-		each of these "string arrays" have length of n, similar to the "string arrays" described above. However, each element lies between 0 and (q-1) as passed in the "string array" <npqd>, that is to say, 0 <= hx < q .
+		each of these "string arrays" have length of n, similar to the "array-like strings" described above. However, each element is an integer between 0 and (q-1) as passed in the "array-like string" <npqd>, that is to say, 0 <= hx < q .
 		Again ensure entry with brackets and punctuation as above.
 
 	<s>/<t>: x
