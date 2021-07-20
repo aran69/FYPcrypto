@@ -54,7 +54,7 @@ Depending on your selected method, enter your arguments to the command line as f
 
 the format of these arguments is:
 	<npqd>: "{n, p, q, d}"
-		the values n, p, q and d are integers and public knowledge, make sure to keep a comma and space between each integer, and that this is passed as a "string array", that is it is entered with the quotation marks and curly brackets in the command line/terminal.
+		the values n, p, q and d are integers and public knowledge, make sure to keep a comma and space between each integer, and that this is passed as an "array-like string", that is it is entered with the quotation marks and curly brackets in the command line/terminal.
 
 	<f>/<fp>/<plaintextblock>: "{f1, f2, ... fn-1, fn}"
 		each of these "string arrays" have length of n, as passed in the string array <npqd> described above, furthermore, each element fx is either a; 0, 1, or -1. (the modulus of each element is p as passed in the string array <npqd> but is currently hardcoded at 3 regardless of input).
