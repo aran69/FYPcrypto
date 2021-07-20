@@ -53,6 +53,7 @@ Depending on your selected method, enter your arguments to the command line as f
 
 
 the format of these arguments is:
+
 	<npqd>: "{n, p, q, d}"
 		the values n, p, q and d are integers and public knowledge, make sure to keep a comma and space between each integer, and that this is passed as an "array-like string", that is it is entered with the quotation marks and curly brackets in the command line/terminal.
 
