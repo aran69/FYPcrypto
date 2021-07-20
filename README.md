@@ -1,4 +1,4 @@
-This document details the operation of NTRU.java, a java class which encrypts plaintext, decrypts ciphertext, nad generates new private and public keys, as detailed in the NTRU cryptosytem.
+This document details the operation of NTRU.java, a java class which encrypts plaintext, decrypts ciphertext, and generates new private and public keys, as detailed in the NTRU cryptosytem.
 
 Step 1) 
 compile in command line/terminal:
